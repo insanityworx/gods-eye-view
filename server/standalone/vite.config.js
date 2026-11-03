@@ -21,7 +21,7 @@ export function standaloneConfig(
     if (process.env[key] === undefined) process.env[key] = value;
   }
   const tools = standaloneVoiceTools();
-  return createBrowserViteConfig({
+  const config = createBrowserViteConfig({
     plugins: [
       ...localProviderPlugins({
         realtime: { tools },
@@ -42,6 +42,13 @@ export function standaloneConfig(
     allowedHosts: resolveAllowedHosts(process.env.GEV_ALLOWED_HOSTS),
     command,
   });
+  config.build.rollupOptions = {
+    input: {
+      main: fileURLToPath(new URL('../../index.html', import.meta.url)),
+      conquest: fileURLToPath(new URL('../../conquest.html', import.meta.url)),
+    },
+  };
+  return config;
 }
 
 export default defineConfig(standaloneConfig);
