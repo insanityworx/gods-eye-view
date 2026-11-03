@@ -1,5 +1,14 @@
 # God's Eye View Current State
 
+This development branch adds `/conquest.html`, a separate single-player strategy
+prototype. Fictional sectors, forces and population-exposure classes are independent
+of the observation console. A match captures one validated, recent weather sample
+through `/api/weather-effects`; unavailable or stale observations use an explicitly
+labelled synthetic baseline. Weather affects only an abstract relief-strain modifier.
+The fixed-step simulation owns AI, queued production and movement, base upgrades,
+combat, escalation and HQ victory conditions. See [CONQUEST.md](CONQUEST.md).
+Multiplayer, tactical unit steering and real population ingestion are not implemented.
+
 Docker Compose mounts the checkout with the shared SELinux `:z` label so
 containers can read it on enforcing SELinux hosts. The separate image-owned
 `node_modules` volume and loopback-only port publishing remain unchanged.

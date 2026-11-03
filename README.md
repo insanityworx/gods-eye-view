@@ -1,3 +1,7 @@
+> **Conquest prototype:** run `npm ci && npm run dev`, then open `/conquest.html`.
+> Single-player fictional strategy with AI, production, territory capture, abstract
+> strategic escalation, and a frozen weather snapshot. [Controls and roadmap](docs/CONQUEST.md).
+
 <div align="center">
 
 # 🌐 God's Eye View
