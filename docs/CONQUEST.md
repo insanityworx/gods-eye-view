@@ -48,23 +48,70 @@ Source code retains the upstream MIT license. Upstream third-party datasets and
 models retain their own terms; the prototype does not consume them. Review
 `LICENSE` and `DATA_SOURCES.md` before selecting data for a distributed release.
 
+## Tactical assaults
+
+From a running campaign, select an allied origin and a neighbouring hostile or
+neutral sector, then choose **Command tactical assault**. The source keeps one
+unit. A tactical assault deploys up to 24 troops against at most 36 defenders;
+use the strategic advance option for larger engagements. The strategic clock
+and its queues pause while the local battlefield is open.
+
+Battles start paused. Press **Resume** when ready. The mint base is yours, the
+coral base belongs to the AI, and gold cells contain ore. This first battlefield
+is an authored 32 × 22 grid with rocks, roads and rough ground.
+
+- Choose a building, then click a valid placement preview near an allied base.
+  Buildings have footprints, costs and health; occupied cells cannot be built on.
+- Power plants supply energy. Refineries, barracks, factories and turrets consume
+  it. Insufficient power pauses production and turrets for either faction.
+- Harvesters collect finite ore and must return it to an intact allied refinery
+  before credits are awarded. They redirect to another deposit when one runs out.
+- Select barracks to produce infantry, a war factory for tanks, or a refinery for
+  more harvesters. Each building has one production queue. The limit is 64 units
+  per faction, including harvesters and queued units.
+- Click a unit, Shift-click to add/remove units, drag a box for group selection,
+  or use **Select army** / **Select harvesters**. Click ground to order movement.
+  **Attack-move** engages nearby enemies. Click an enemy for a focused attack.
+  Select harvesters and click ore to assign a deposit.
+- Keyboard: focus the battlefield, position the cell cursor with arrows and press
+  Enter to issue an order or place a building. Escape clears selection/build mode.
+- Infantry, tanks and turrets exchange simultaneous damage with health and attack
+  cooldowns. Destroying the enemy command centre ends the battle. Capture requires
+  surviving combat troops. The AI uses the same economy and command validation,
+  builds its base and produces reinforcements; its first assault is after 30 seconds.
+- Return after victory/defeat or confirm retreat. Surviving combat troops, enemy
+  garrison and remaining credits carry back to the campaign. Each side reserves
+  up to 300 of its actual campaign credits at deployment. Buildings and harvesters
+  belong to the local theatre; surviving combat units become the sector garrison
+  or return to the source after defeat/retreat. The campaign remains paused on return.
+- Ore depletion is retained per sector across assaults. Roads and rough terrain
+  change travel costs and speed for both sides. These are authored roads, not
+  live OpenStreetMap data. Real network imports are a later integration.
+
+The battlefield is SVG and does not require WebGL or provider keys. It runs from
+pure JavaScript state with fixed 200ms steps, ready to embed in another web host.
+There is currently no save/load across page reloads, native Unreal integration,
+multiplayer, fog of war, audio, or persistent tactical building layout. Units use
+four-way grid routing; this is not yet a full vehicle steering/collision model.
+
 ## Architecture and next milestones
 
-- `src/conquest/simulation.js`: pure fixed-step commands and simulation, with AI.
-- `src/conquest/weather.js`: bounded, validated weather snapshot acquisition.
-- `src/conquest/map.js`: keyless globe renderer and sector picking.
-- `src/conquest/main.js`: runtime owner, lifecycle and clock.
-- `src/ui/stores/conquest.js` and `src/conquest/ConquestView.vue`: presentation.
+- `src/conquest/simulation.js`: strategic campaign and queued orders.
+- `src/conquest/battlefield.js`: deterministic tactical economy, routing, AI and combat.
+- `src/conquest/sectorBattle.js`: deployment budgets and campaign outcome hand-off.
+- `src/conquest/weather.js`: validated weather snapshot acquisition.
+- `src/conquest/map.js`: keyless campaign globe and sector picking.
+- `src/conquest/main.js`: runtime owner, lifecycle and both clocks.
+- `src/ui/stores/conquest.js`, `ConquestView.vue` and `TacticalView.vue`: presentation.
 
-Next: save/load and replay command logs; tactical battlefields with individual
-unit movement and construction; distinct factions and richer AI; licensed,
-aggregate environmental inputs; then authoritative multiplayer with lobby,
-shared snapshot IDs, server-side command validation and reconnect. The present
-browser-owned state is single-player only and is not an online authority.
+Next: playtesting and balance, save/load and replay logs, fog of war, faction
+identity, better unit steering and real road-data import. Licensed aggregate
+environmental inputs and authoritative multiplayer can follow. Browser state is
+single-player only; it is not an online authority.
 
 ## Verification
 
-Run `node --test src/conquest/*.test.mjs` for the campaign-specific rules and
+Run `node --import=./build/registerVue.js --test src/conquest/*.test.mjs` for the campaign-specific rules and
 weather checks. Repository gates remain `npm test`, `npm run build` and
 `npm run test:track` (the last needs the dev server and Chromium). The normal
 observation-console entry point remains `/`.
@@ -72,13 +119,15 @@ observation-console entry point remains `/`.
 ## Current development checkpoint
 
 The prototype UI is currently English. Its messages use the existing translation
-API, but the 11 non-English catalogs still need the new campaign entries; the
+API, but the 11 non-English catalogs still need the campaign and tactical entries; the
 localization gate fails until those translations are supplied.
 
-At this checkpoint, production compilation, package boundaries, 18 focused
-campaign/interface/panel tests, and four world-label policy tests pass. The broad
-suite reported 9,825 passing, two skipped and 12 failing tests: 11 catalog checks
-and the label policy check. The label policy failure was subsequently fixed and
-its four tests rerun successfully. The broad suite has not been rerun after that
-fix. Browser rendering and the flight-tracking browser regression remain
-unverified because the managed preview relay is unavailable in this workspace.
+The tactical milestone has focused coverage of terrain routing, road speed,
+placement, power and production, resource delivery/depletion, combat, AI,
+deployment/retreat accounting, keyboard placement, drag selection and interface
+controls. Production compilation and import-direction checks are also run.
+
+The broader suite is still subject to the known missing-localization failures.
+Browser rendering and the flight-tracking browser regression remain unverified
+because the managed preview relay is unavailable in this workspace. Detailed
+validation results are recorded in the draft pull request.

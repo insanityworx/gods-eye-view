@@ -10,12 +10,28 @@ export const useConquestStore = defineStore('conquest', () => {
   const loading = ref(false);
   const error = ref('');
   const mapError = ref(false);
+  const battlefield = shallowRef(null);
+  const selectedUnits = ref([]);
+  const selectedBuilding = ref(null);
+  const buildTool = ref(null);
+  const tacticalPaused = ref(false);
+  const tacticalOrder = ref('move');
+  const tacticalError = ref('');
+  const hoverCell = ref(null);
   const handlers = {};
   function act(name, ...args) {
     handlers[name]?.(...args);
   }
   return {
     match,
+    battlefield,
+    selectedUnits,
+    selectedBuilding,
+    buildTool,
+    tacticalPaused,
+    tacticalOrder,
+    tacticalError,
+    hoverCell,
     selected,
     origin,
     paused,

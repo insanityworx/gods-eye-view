@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { t } from '../i18n/index.js';
 import { useConquestStore } from '../ui/stores/conquest.js';
+import TacticalView from './TacticalView.vue';
 import { adjacent, COSTS } from './simulation.js';
 const store = useConquestStore();
 const mode = ref('conquest');
@@ -58,6 +59,9 @@ const errors = computed(() => ({
   unavailable: t('This action is unavailable.'),
   maximum: t('Maximum building level reached.'),
   finished: t('The match has ended.'),
+  'invalid-battle': t(
+    'Deploy 1–24 units into a neighbouring hostile sector with at most 36 defenders.',
+  ),
 }));
 const eventText = (event) =>
   ({
@@ -86,7 +90,12 @@ function start() {
 </script>
 
 <template>
-  <main class="campaign">
+  <TacticalView v-if="store.battlefield" />
+  <main
+    class="campaign"
+    :inert="store.battlefield ? true : undefined"
+    :aria-hidden="store.battlefield ? true : undefined"
+  >
     <div id="campaign-globe" aria-label="Campaign globe"></div>
     <div class="map-vignette"></div>
     <header class="campaign-header">
@@ -345,6 +354,17 @@ function start() {
           }}
           <span>→</span></button
         >
+        <button
+          class="tactical-launch"
+          :disabled="!canMove || sector.owner === 'player' || sector.units > 36"
+          @click="store.act('battle')"
+          >{{ t('Command tactical assault') }} <span>↗</span></button
+        >
+        <p class="micro">{{
+          t(
+            'Deploy up to 24 troops. Build a base, harvest ore and command the battle. The campaign pauses until you return.',
+          )
+        }}</p>
         <button class="danger" :disabled="!canStrike" @click="strike">{{
           armed
             ? t('Confirm strategic strike · 250 CR')

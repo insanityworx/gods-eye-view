@@ -1,6 +1,6 @@
 > **Conquest prototype:** run `npm ci && npm run dev`, then open `/conquest.html`.
-> Single-player fictional strategy with AI, production, territory capture, abstract
-> strategic escalation, and a frozen weather snapshot. [Controls and roadmap](docs/CONQUEST.md).
+> Single-player strategy with connected tactical battles, placeable bases, harvesters,
+> infantry/tanks, road-aware AI, territory capture and a frozen weather snapshot. [Controls and roadmap](docs/CONQUEST.md).
 
 <div align="center">
 

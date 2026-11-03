@@ -36,7 +36,8 @@ export function createMatch({
   if (!['conquest', 'total-war'].includes(mode))
     throw new TypeError('Unknown mode');
   return {
-    version: 1,
+    version: 2,
+    battle: null,
     mode,
     tick: 0,
     status: 'playing',
@@ -108,6 +109,29 @@ function execute(state, command, actor) {
     return null;
   }
   if (sector.owner !== actor) return 'ownership';
+  if (command.type === 'battle') {
+    const target = state.sectors[command.target];
+    if (
+      !target ||
+      target.owner === actor ||
+      !adjacent(sector.id, target.id) ||
+      !Number.isInteger(command.units) ||
+      command.units < 1 ||
+      command.units > 24 ||
+      command.units >= sector.units ||
+      target.units > 36
+    )
+      return 'invalid-battle';
+    sector.units -= command.units;
+    state.battle = {
+      id: state.nextOrder++,
+      actor,
+      from: sector.id,
+      target: target.id,
+      units: command.units,
+    };
+    return null;
+  }
   if (command.type === 'move') {
     const target = state.sectors[command.target];
     const units = command.units;
@@ -168,6 +192,7 @@ function execute(state, command, actor) {
 export function commandMatch(current, command, actor = 'player') {
   if (current.status !== 'playing')
     return { state: current, error: 'finished' };
+  if (current.battle) return { state: current, error: 'battle-active' };
   const state = structuredClone(current);
   const error = execute(state, command, actor);
   if (error) return { state: current, error };
@@ -248,7 +273,7 @@ function enemyTurn(state) {
 
 /** Advance one fixed step, resolving queued orders in deterministic ID order. */
 export function tickMatch(current, { ai = true } = {}) {
-  if (current.status !== 'playing') return current;
+  if (current.status !== 'playing' || current.battle) return current;
   const state = structuredClone(current);
   state.tick++;
   for (const faction of Object.values(state.factions))
@@ -277,4 +302,40 @@ export function tickMatch(current, { ai = true } = {}) {
   if (ai && state.status === 'playing' && state.tick % 8 === 0)
     enemyTurn(state);
   return state;
+}
+
+/** Resolve the local tactical theatre once, carrying surviving forces to the campaign. */
+export function resolveCampaignBattle(
+  current,
+  battleId,
+  { winner, survivors, defenders },
+) {
+  if (
+    !current.battle ||
+    current.battle.id !== battleId ||
+    !['player', 'enemy', 'draw', 'retreat'].includes(winner) ||
+    ![survivors, defenders].every(
+      (n) => Number.isInteger(n) && n >= 0 && n <= 64,
+    ) ||
+    (winner === 'player' && survivors === 0)
+  )
+    return { state: current, error: 'invalid-result' };
+  const state = structuredClone(current);
+  const battle = state.battle;
+  const target = state.sectors[battle.target];
+  if (winner === 'player') {
+    target.owner = 'player';
+    target.units = survivors;
+    event(state, 'capture', target.name);
+  } else {
+    target.units = defenders;
+    state.sectors[battle.from].units += survivors;
+    event(state, 'repelled', target.name);
+  }
+  target.infrastructure = Math.max(10, target.infrastructure - 8);
+  strain(state, target, 3);
+  state.escalation = Math.min(100, state.escalation + 7);
+  state.battle = null;
+  finish(state);
+  return { state, error: null };
 }
