@@ -372,6 +372,8 @@ select {
   gap: 28px;
 }
 .sector-grid {
+  /* Keep the map’s west-to-east layout in right-to-left locales. */
+  direction: ltr;
   width: 265px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);

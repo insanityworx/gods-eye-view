@@ -1,3 +1,5 @@
+import { setLocale } from '../i18n/index.js';
+import { applyDocumentLanguage, resolveLocale } from '../i18n/locale.js';
 import { createUiRuntime } from '../ui/vueRuntime.js';
 import { useConquestStore } from '../ui/stores/conquest.js';
 import ConquestView from './ConquestView.vue';
@@ -8,6 +10,10 @@ import { commandField, tickField } from './battlefield.js';
 import { deploySectorBattle, settleSectorBattle } from './sectorBattle.js';
 import './style.css';
 import './tactical.css';
+
+const locale = resolveLocale();
+setLocale(locale);
+applyDocumentLanguage(document, locale);
 
 const runtime = createUiRuntime();
 const store = useConquestStore(runtime.pinia);
