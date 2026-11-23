@@ -26,6 +26,8 @@ export function panelBuildConfig(config) {
       cssCodeSplit: false,
       rollupOptions: {
         ...config.build?.rollupOptions,
+        // The embedded observation panel has one entry, even in a multi-page build.
+        input: config.build?.rollupOptions?.input?.main ?? 'index.html',
         output: { inlineDynamicImports: true },
       },
     },

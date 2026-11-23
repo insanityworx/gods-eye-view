@@ -114,3 +114,15 @@ test("Cesium's workers get embedded files from memory and other requests from th
     globalThis.ProgressEvent = saved.ProgressEvent;
   }
 });
+
+test('embedded panel keeps the main entry when standalone builds multiple pages', () => {
+  const config = panelBuildConfig({
+    build: {
+      rollupOptions: {
+        input: { main: '/app/index.html', conquest: '/app/conquest.html' },
+      },
+    },
+  });
+  assert.equal(config.build.rollupOptions.input, '/app/index.html');
+  assert.equal(config.build.rollupOptions.output.inlineDynamicImports, true);
+});
